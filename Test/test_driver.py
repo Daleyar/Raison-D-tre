@@ -1,5 +1,6 @@
 from selenium import webdriver
 
+
 def test_title():
     driver = webdriver.Chrome()
     driver.get("https://raison-detre.herokuapp.com")
