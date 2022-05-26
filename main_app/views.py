@@ -11,12 +11,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 S3_BASE_URL = 'https://s3.us-east-1.amazonaws.com/'
 BUCKET = 'myfirstbucket93'
 
+
 # Define the home view
-
-
-
-
-
 def about(request):
     return render(request, 'about.html')
 
@@ -30,50 +26,50 @@ def places_index(request):
 @login_required
 def places_detail(request, place_id):
     place = Place.objects.get(id=place_id)
-    return render(request, 'places/detail.html', { 'place': place })
+    return render(request, 'places/detail.html', {'place': place})
 
 
 @login_required
 def add_photo(request, place_id):
-  photo_file = request.FILES.get('photo-file', None)
-  if photo_file:
-    s3 = boto3.client('s3')
-    key = uuid.uuid4().hex + photo_file.name[photo_file.name.rfind('.'):]
-    try:
-      s3.upload_fileobj(photo_file, BUCKET, key)
-      url = f"{S3_BASE_URL}{BUCKET}/{key}"
-      photo = Photo(url=url, place_id=place_id)
-      place_photo = Photo.objects.filter(place_id=place_id)
-      if place_photo.first():
-        place_photo.first().delete()
-      photo.save()
-    except Exception as err:
-      print('An error occurred uploading file to S3: %s' % err)
-  return redirect('places_detail', place_id=place_id)
+    photo_file = request.FILES.get('photo-file', None)
+    if photo_file:
+      s3 = boto3.client('s3')
+      key = uuid.uuid4().hex + photo_file.name[photo_file.name.rfind('.'):]
+      try:
+        s3.upload_fileobj(photo_file, BUCKET, key)
+        url = f"{S3_BASE_URL}{BUCKET}/{key}"
+        photo = Photo(url=url, place_id=place_id)
+        place_photo = Photo.objects.filter(place_id=place_id)
+        if place_photo.first():
+          place_photo.first().delete()
+        photo.save()
+      except Exception as err:
+        print('An error occurred uploading file to S3: %s' % err)
+    return redirect('places_detail', place_id=place_id)
 
   
 def signup(request):
-  error_message = ''
-  if request.method == 'POST':
-    # This is how to create a 'user' form object
-    # that includes the data from the browser
-    form = UserCreationForm(request.POST)
-    if form.is_valid():
-      # This will add the user to the database
-      user = form.save()
-      # This is how we log a user in
-      login(request, user)
-      return redirect('places_index')
-    else:
-      error_message = 'Invalid sign up - try again'
-  # A bad POST or a GET request, so render signup.html with an empty form
-  form = UserCreationForm()
-  context = {'form': form, 'error_message': error_message}
-  return render(request, 'signup.html', context)
+    error_message = ''
+    if request.method == 'POST':
+      # This is how to create a 'user' form object
+      # that includes the data from the browser
+      form = UserCreationForm(request.POST)
+      if form.is_valid():
+        # This will add the user to the database
+        user = form.save()
+        # This is how we log a user in
+        login(request, user)
+        return redirect('places_index')
+      else:
+        error_message = 'Invalid sign up - try again'
+    # A bad POST or a GET request, so render signup.html with an empty form
+    form = UserCreationForm()
+    context = {'form': form, 'error_message': error_message}
+    return render(request, 'signup.html', context)
 
 
 class Home(LoginView):
-  template_name = 'home.html'
+    template_name = 'home.html'
 
 
 class Home(LoginView):
